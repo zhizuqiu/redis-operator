@@ -1,0 +1,38 @@
+apiVersion: component.zhizuqiu/v1alpha1
+kind: Redis
+metadata:
+  name: redis-cr-vpc
+spec:
+  sentinel:
+    image: 'redis:5.0-alpine'
+    replicas: 3
+    service:
+      enabled: true
+    resources:
+      requests:
+        cpu: 100m
+      limits:
+        memory: 100Mi
+    tolerations:
+    - key: "node-role.kubernetes.io/master"
+      operator: "Exists"
+      effect: "NoSchedule"
+    service:
+      enabled: true
+  redis:
+    image: 'redis:5.0-alpine'
+    replicas: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 100Mi
+      limits:
+        cpu: 100m
+        memory: 256Mi
+  exporter:
+    enabled: true
+    image: docker.io/zhizuqiu/redis-exporter:latest
+  auth:
+    password:
+      encodeType: sm4
+      value: fbd297723eb1d4a925b69d1437bb91ae

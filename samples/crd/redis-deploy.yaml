@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    control-plane: redis-controller-manager
+  name: redis-controller-manager
+  namespace: redis-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      control-plane: redis-controller-manager
+  template:
+    metadata:
+      labels:
+        control-plane: redis-controller-manager
+        controller-component: redis-operator
+    spec:
+      containers:
+      - args:
+        - --enable-leader-election
+        command:
+        - /manager
+        env:
+        - name: TZ
+          value: Asia/Shanghai
+        image: docker.io/zhizuqiu/redis-operator:latest
+        imagePullPolicy: Always
+        name: manager
+        resources:
+          limits:
+            cpu: 100m
+            memory: 2048Mi
+          requests:
+            cpu: 100m
+            memory: 2048Mi
+      hostNetwork: true
+      serviceAccount: redis-controller
+      terminationGracePeriodSeconds: 10

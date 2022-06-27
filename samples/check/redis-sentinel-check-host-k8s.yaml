@@ -1,0 +1,51 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: redis-sentinel-check-svc
+spec:
+  ports:
+    - name: status
+      protocol: TCP
+      port: 8000
+      targetPort: 8000
+      nodePort: 38000
+  selector:
+    k8s-app: redis-sentinel-check
+  type: NodePort
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: redis-sentinel-check
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      k8s-app: redis-sentinel-check
+  template:
+    metadata:
+      name: redis-sentinel-check
+      labels:
+        k8s-app: redis-sentinel-check
+    spec:
+      volumes:
+        - name: redis-data
+          emptyDir: {}
+      containers:
+        - name: redis-sentinel-check
+          image: >-
+            docker.io/zhizuqiu/redis-sentinel-check:latest
+          env:
+            - name: SENTINEL_HOST
+              value: rss-redis-sample.default.svc.cluster.local
+            - name: SENTINEL_PORT
+              value: '26379'
+            - name: REDIS_PASS
+              value: pass
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          ports:
+            - containerPort: 8000
+              name: check
+  serviceName: ""

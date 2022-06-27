@@ -1,0 +1,52 @@
+apiVersion: component.zhizuqiu/v1alpha1
+kind: Redis
+metadata:
+  name: redis-cr-host
+spec:
+  sentinel:
+    image: 'redis:5.0-alpine'
+    replicas: 3
+    service:
+      enabled: true
+    resources:
+      limits:
+        cpu: 100m
+        memory: 256Mi
+    hostNetwork: true
+    staticResources:
+    - host: node01
+      port: 27389
+    - host: node01
+      port: 27390
+    - host: node02
+      port: 27389
+    tolerations:
+    - key: "node-role.kubernetes.io/master"
+      operator: "Exists"
+      effect: "NoSchedule"
+    service:
+      enabled: true
+  redis:
+    image: 'redis:5.0-alpine'
+    replicas: 2
+    resources:
+      limits:
+        cpu: 100m
+        memory: 256Mi
+    hostNetwork: true
+    staticResources:
+    - host: node01
+      port: 6389
+    - host: node02
+      port: 6389
+  exporter:
+    enabled: true
+    image: docker.io/zhizuqiu/redis-exporter:latest
+    hostNetwork: true
+    staticResource:
+      host: node02
+      port: 29121
+  auth:
+    password:
+      encodeType: sm4
+      value: fbd297723eb1d4a925b69d1437bb91ae
